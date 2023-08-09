@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Container from './components/Container';
+import Input from './components/Input';
 import Summary from './components/Summary/Summary';
-import Input from './components/InputContainer';
 import Tasks from './components/Tasks/Tasks';
 
 export interface Task {
@@ -10,40 +10,51 @@ export interface Task {
   done: boolean;
   id: string;
 }
-const initialTasks = [
-  //initializing the tasks value with dummy data
-  {
-    name: '',
-    done: false,
-    id: uuidv4,
-  },
-  {
-    name: '',
-    done: false,
-    id: uuidv4,
-  },
-];
 
 function App() {
-  const [tasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>, value: string) => {
+    e.preventDefault();
+    const newTask = {
+      name: value,
+      done: false,
+      id: uuidv4(),
+    };
+    setTasks((tasks) => [...tasks, newTask]);
+  };
+
+  const toggleDoneTask = (id: string, done: boolean) => {
+    setTasks((tasks) =>
+      tasks.map((t) => {
+        if (t.id === id) {
+          t.done = done;
+        }
+        return t;
+      }),
+    );
+  };
+
+  const handleDeleteTask = (id: string) => {
+    setTasks((tasks) => tasks.filter((t) => t.id !== id));
+  };
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline">App Component</h1>
-      <Container title={'Container Title'}>
-        <Summary tasks={tasks} />
-        {/* <Summary tasks={'Tasks'} /> */}
-      </Container>
-      <Container title={'Container Title'}>
-        <Input />
-      </Container>
-      <Container title={'Container Title'}>
-        <Tasks />
-      </Container>
+    <div className="flex justify-center m-5">
+      <div className="flex flex-col items-center">
+        <div className="border shadow p-10 flex flex-col gap-10 sm:w-[640px]">
+          <Container title={'Summary'}>
+            <Summary tasks={tasks} />
+          </Container>
+          <Container>
+            <Input handleSubmit={handleSubmit} />
+          </Container>
+          <Container title={'Tasks'}>
+            <Tasks tasks={tasks} toggleDone={toggleDoneTask} handleDelete={handleDeleteTask} />
+          </Container>
+        </div>
+      </div>
     </div>
-    //pass summary into container
-    //pass input into container
-    //pass tasks into container
   );
 }
 
